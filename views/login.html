@@ -1,0 +1,130 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRM Portal Login | Boost Built</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background-color: var(--color-secondary); /* Dark Navy */
+      color: var(--color-white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      font-family: var(--font-body);
+    }
+    .login-container {
+      width: 100%;
+      max-width: 420px;
+      padding: 2.5rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--border-radius-sm);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    .login-logo {
+      font-family: var(--font-headings);
+      font-weight: 800;
+      font-size: 2rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      color: var(--color-white);
+    }
+    .login-logo span {
+      color: var(--color-primary); /* Yellow */
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--color-gray-300);
+    }
+    .form-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background-color: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+      color: var(--color-white);
+      font-size: 1rem;
+      box-sizing: border-box;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    .btn-submit {
+      width: 100%;
+      padding: 0.85rem;
+      background-color: var(--color-primary);
+      color: var(--color-secondary);
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+    .btn-submit:hover {
+      background-color: var(--color-primary-hover);
+      transform: translateY(-1px);
+    }
+    .btn-submit:active {
+      transform: translateY(0);
+    }
+    .back-home {
+      display: block;
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.875rem;
+      color: var(--color-gray-400);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .back-home:hover {
+      color: var(--color-white);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    <div class="login-logo">
+      Boost<span>Built</span>
+    </div>
+    
+    <form action="/admin/login" method="POST">
+      <div class="form-group">
+        <label class="form-label" for="username">Username</label>
+        <input class="form-input" type="text" id="username" name="username" required placeholder="Enter username" autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input class="form-input" type="password" id="password" name="password" required placeholder="Enter password" autocomplete="current-password">
+      </div>
+      
+      <button type="submit" class="btn-submit">
+        Secure Log In <i class="fa-solid fa-lock"></i>
+      </button>
+    </form>
+    
+    <a href="/" class="back-home"><i class="fa-solid fa-arrow-left"></i> Back to Website</a>
+  </div>
+
+</body>
+</html>

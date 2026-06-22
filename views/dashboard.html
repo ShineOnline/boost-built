@@ -1,0 +1,818 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Boost Built | Admin CRM Dashboard</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --color-sidebar: #1E2230;
+      --color-dash-bg: #F4F6F9;
+      --color-card-border: #E5E7EB;
+    }
+    body {
+      background-color: var(--color-dash-bg);
+      color: var(--color-text-dark);
+      margin: 0;
+      font-family: var(--font-body);
+      display: flex;
+      min-height: 100vh;
+    }
+    /* Sidebar Navigation */
+    .sidebar {
+      width: 260px;
+      background-color: var(--color-sidebar);
+      color: var(--color-white);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      box-shadow: 4px 0 10px rgba(0, 0, 0, 0.05);
+    }
+    .sidebar-header {
+      padding: 2rem 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .sidebar-logo {
+      font-family: var(--font-headings);
+      font-weight: 800;
+      font-size: 1.5rem;
+    }
+    .sidebar-logo span {
+      color: var(--color-primary);
+    }
+    .sidebar-menu {
+      list-style: none;
+      padding: 1.5rem 0;
+      margin: 0;
+      flex-grow: 1;
+    }
+    .menu-item button {
+      width: 100%;
+      padding: 1rem 1.5rem;
+      background: none;
+      border: none;
+      color: var(--color-gray-300);
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: all 0.2s;
+      border-left: 4px solid transparent;
+    }
+    .menu-item button:hover {
+      color: var(--color-white);
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+    .menu-item.active button {
+      color: var(--color-white);
+      background-color: rgba(255, 255, 255, 0.05);
+      border-left-color: var(--color-primary);
+    }
+    .sidebar-footer {
+      padding: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .btn-logout {
+      width: 100%;
+      padding: 0.75rem;
+      background-color: rgba(255, 255, 255, 0.05);
+      color: var(--color-white);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: background-color 0.2s;
+    }
+    .btn-logout:hover {
+      background-color: #EF4444;
+      border-color: #EF4444;
+    }
+
+    /* Main Dashboard View */
+    .main-view {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow-y: auto;
+      box-sizing: border-box;
+    }
+    .main-header {
+      background-color: var(--color-white);
+      padding: 1.5rem 2.5rem;
+      border-bottom: 1px solid var(--color-card-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .header-title h1 {
+      margin: 0 0 0.25rem 0;
+      font-size: 1.5rem;
+      font-weight: 800;
+    }
+    .header-title p {
+      margin: 0;
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+    }
+    .main-content {
+      padding: 2.5rem;
+      max-width: 1200px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* Tab Layout Views */
+    .tab-view {
+      display: none;
+    }
+    .tab-view.active {
+      display: block;
+    }
+
+    /* Cards & Containers */
+    .card-panel {
+      background-color: var(--color-white);
+      border: 1px solid var(--color-card-border);
+      border-radius: var(--border-radius-sm);
+      padding: 2rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+      margin-bottom: 2rem;
+    }
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-top: 0;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--color-card-border);
+      padding-bottom: 0.75rem;
+    }
+
+    /* Leads Table Styles */
+    .leads-table-container {
+      overflow-x: auto;
+    }
+    .leads-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    .leads-table th {
+      background-color: var(--color-gray-50);
+      padding: 0.9rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--color-text-dark);
+      border-bottom: 2px solid var(--color-card-border);
+      text-transform: uppercase;
+    }
+    .leads-table td {
+      padding: 1rem 0.9rem;
+      font-size: 0.9rem;
+      border-bottom: 1px solid var(--color-card-border);
+      vertical-align: top;
+    }
+    .leads-table tr:hover {
+      background-color: var(--color-gray-50);
+    }
+    .badge-trade {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      background-color: var(--color-gray-100);
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: capitalize;
+    }
+    .lead-message {
+      max-width: 300px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: var(--color-text-muted);
+      font-size: 0.85rem;
+    }
+    .btn-delete-lead {
+      background: none;
+      border: none;
+      color: #EF4444;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0.25rem;
+      transition: color 0.15s;
+    }
+    .btn-delete-lead:hover {
+      color: #B91C1C;
+    }
+    .no-leads {
+      text-align: center;
+      padding: 3rem;
+      color: var(--color-text-muted);
+    }
+    .no-leads i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: var(--color-gray-300);
+    }
+
+    /* CRM Editor Forms */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (min-width: 768px) {
+      .form-row-2 {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .field-label {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--color-text-dark);
+    }
+    .field-input, .field-textarea, .field-select {
+      padding: 0.75rem;
+      border: 1px solid var(--color-card-border);
+      border-radius: 4px;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      box-sizing: border-box;
+      width: 100%;
+    }
+    .field-input:focus, .field-textarea:focus, .field-select:focus {
+      outline: none;
+      border-color: var(--color-primary);
+    }
+    .field-textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    .field-hint {
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      margin: 0;
+    }
+    .btn-save {
+      background-color: var(--color-primary);
+      color: var(--color-secondary);
+      border: none;
+      padding: 0.85rem 1.5rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: background-color 0.2s;
+    }
+    .btn-save:hover {
+      background-color: var(--color-primary-hover);
+    }
+
+    /* Image Preview Widget */
+    .image-edit-container {
+      display: flex;
+      gap: 1.5rem;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+      border: 1px dashed var(--color-card-border);
+      padding: 1.5rem;
+      border-radius: 4px;
+    }
+    .image-preview {
+      width: 160px;
+      height: 100px;
+      border-radius: 4px;
+      background-color: var(--color-gray-100);
+      background-size: cover;
+      background-position: center;
+      border: 1px solid var(--color-card-border);
+      flex-shrink: 0;
+    }
+    .image-upload-form {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    /* Search Bar leads */
+    .search-bar {
+      margin-bottom: 1.5rem;
+      display: flex;
+      gap: 1rem;
+    }
+    .search-input {
+      flex-grow: 1;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--color-card-border);
+      border-radius: var(--border-radius-sm);
+      font-size: 0.9rem;
+    }
+
+    /* Alerts */
+    .alert-success {
+      background-color: #DEF7EC;
+      color: #03543F;
+      border: 1px solid #BCF0DA;
+      border-radius: 4px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">Boost<span>Built</span></div>
+    </div>
+    
+    <nav style="flex-grow: 1;">
+      <ul class="sidebar-menu">
+        <li class="menu-item active" id="menu-leads">
+          <button onclick="switchTab('leads')">
+            <i class="fa-solid fa-users"></i> Leads List
+          </button>
+        </li>
+        <li class="menu-item" id="menu-site-text">
+          <button onclick="switchTab('site-text')">
+            <i class="fa-solid fa-file-pen"></i> Edit Site Text
+          </button>
+        </li>
+        <li class="menu-item" id="menu-site-images">
+          <button onclick="switchTab('site-images')">
+            <i class="fa-solid fa-images"></i> Edit Images
+          </button>
+        </li>
+        <li class="menu-item" id="menu-site-seo">
+          <button onclick="switchTab('site-seo')">
+            <i class="fa-solid fa-globe"></i> SEO & Integrations
+          </button>
+        </li>
+      </ul>
+    </nav>
+    
+    <div class="sidebar-footer">
+      <a href="/admin/logout" class="btn-logout">
+        Logout <i class="fa-solid fa-right-from-bracket"></i>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main View -->
+  <main class="main-view">
+    <header class="main-header">
+      <div class="header-title">
+        <h1 id="view-title">Leads Management Panel</h1>
+        <p id="view-subtitle">Manage client details and project requests captured from the website forms.</p>
+      </div>
+      <div>
+        <a href="/" target="_blank" class="btn btn-secondary text-sm font-semibold inline-flex" style="padding: 0.6rem 1rem;">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Visit Website
+        </a>
+      </div>
+    </header>
+
+    <div class="main-content">
+      
+      <!-- Save Success Alert -->
+      <div id="save-alert" class="alert-success" style="display: none;">
+        <i class="fa-solid fa-circle-check"></i> Changes saved successfully and site updated!
+      </div>
+
+      <!-- DATA_INJECTION MARKER -->
+      <!-- BACKEND_MARKER: DATA_INJECTION -->
+
+      <!-- VIEW 1: LEADS LIST -->
+      <div id="tab-leads" class="tab-view active">
+        <div class="card-panel">
+          <h2 class="card-title"><i class="fa-solid fa-envelope-open-text text-primary"></i> Customer Form Leads</h2>
+          
+          <div class="search-bar">
+            <input type="text" id="lead-search" class="search-input" placeholder="Search leads by name, email, phone, or trade..." oninput="filterLeads()">
+          </div>
+
+          <div class="leads-table-container">
+            <table class="leads-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Contact Info</th>
+                  <th>Trade</th>
+                  <th>Message / Request</th>
+                  <th style="width: 50px;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="leads-body">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- VIEW 2: EDIT SITE TEXT -->
+      <div id="tab-site-text" class="tab-view">
+        
+        <!-- Homepage Section settings -->
+        <div class="card-panel">
+          <h2 class="card-title"><i class="fa-solid fa-house-user text-primary"></i> Home Page Hero Section</h2>
+          <form action="/admin/save-content?tab=site-text" method="POST">
+            <input type="hidden" name="section" value="homepage">
+            
+            <div class="form-row">
+              <div class="field-group">
+                <label class="field-label" for="hero_title">Hero Title Text</label>
+                <input type="text" id="hero_title" name="hero_title" class="field-input" required>
+                <p class="field-hint">Supports HTML tags. Use non-breaking spaces &amp; break lines to format nicely on desktop.</p>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="field-group">
+                <label class="field-label" for="hero_description">Hero Description Paragraph</label>
+                <textarea id="hero_description" name="hero_description" class="field-textarea" required></textarea>
+                <p class="field-hint">Supports text and basic spacing tags.</p>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-save">
+              Save Home Page Settings <i class="fa-solid fa-save"></i>
+            </button>
+          </form>
+        </div>
+
+        <!-- Onboarding Process timeline settings -->
+        <div class="card-panel">
+          <h2 class="card-title"><i class="fa-solid fa-route text-primary"></i> Process Timeline Steps (Our Process Page)</h2>
+          <form action="/admin/save-content?tab=site-text" method="POST">
+            <input type="hidden" name="section" value="process">
+
+            <!-- Step 1 -->
+            <div class="form-row form-row-2">
+              <div class="field-group">
+                <label class="field-label" for="step1_title">Step 1 Title</label>
+                <input type="text" id="step1_title" name="step1_title" class="field-input" required>
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="step1_desc">Step 1 Description</label>
+                <textarea id="step1_desc" name="step1_desc" class="field-textarea" required></textarea>
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="form-row form-row-2" style="border-top: 1px solid var(--color-card-border); padding-top: 1.5rem;">
+              <div class="field-group">
+                <label class="field-label" for="step2_title">Step 2 Title</label>
+                <input type="text" id="step2_title" name="step2_title" class="field-input" required>
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="step2_desc">Step 2 Description</label>
+                <textarea id="step2_desc" name="step2_desc" class="field-textarea" required></textarea>
+              </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="form-row form-row-2" style="border-top: 1px solid var(--color-card-border); padding-top: 1.5rem;">
+              <div class="field-group">
+                <label class="field-label" for="step3_title">Step 3 Title</label>
+                <input type="text" id="step3_title" name="step3_title" class="field-input" required>
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="step3_desc">Step 3 Description</label>
+                <textarea id="step3_desc" name="step3_desc" class="field-textarea" required></textarea>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-save">
+              Save Process Settings <i class="fa-solid fa-save"></i>
+            </button>
+          </form>
+        </div>
+
+      </div>
+
+      <!-- VIEW 3: EDIT IMAGES -->
+      <div id="tab-site-images" class="tab-view">
+        <div class="card-panel">
+          <h2 class="card-title"><i class="fa-solid fa-images text-primary"></i> Edit Website Images (Direct File Upload)</h2>
+          
+          <!-- Hero Graphic Upload -->
+          <div class="field-group" style="margin-bottom: 2rem;">
+            <span class="field-label">Home Page Hero Mascot Illustration</span>
+            <div class="image-edit-container">
+              <div id="preview-hero" class="image-preview"></div>
+              <form class="image-upload-form" action="/admin/upload-image" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="target_field" value="hero_graphic">
+                <input type="file" name="image_file" accept="image/*" required>
+                <div>
+                  <button type="submit" class="btn-save text-sm" style="padding: 0.5rem 1rem;"><i class="fa-solid fa-upload"></i> Upload & Replace</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Product 1 Image Upload -->
+          <div class="field-group" style="margin-bottom: 2rem;">
+            <span class="field-label">Product 01 Preview Image (Portsmouth Kitchen Fitting Screenshot)</span>
+            <div class="image-edit-container">
+              <div id="preview-prod1" class="image-preview"></div>
+              <form class="image-upload-form" action="/admin/upload-image" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="target_field" value="product1_image">
+                <input type="file" name="image_file" accept="image/*" required>
+                <div>
+                  <button type="submit" class="btn-save text-sm" style="padding: 0.5rem 1rem;"><i class="fa-solid fa-upload"></i> Upload & Replace</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Product 2 Image Upload -->
+          <div class="field-group" style="margin-bottom: 2rem;">
+            <span class="field-label">Product 02 Preview Image (Missed Call Textback Graphic)</span>
+            <div class="image-edit-container">
+              <div id="preview-prod2" class="image-preview"></div>
+              <form class="image-upload-form" action="/admin/upload-image" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="target_field" value="product2_image">
+                <input type="file" name="image_file" accept="image/*" required>
+                <div>
+                  <button type="submit" class="btn-save text-sm" style="padding: 0.5rem 1rem;"><i class="fa-solid fa-upload"></i> Upload & Replace</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- VIEW 4: SEO & INTEGRATIONS -->
+      <div id="tab-site-seo" class="tab-view">
+        
+        <!-- Google maps configuration -->
+        <div class="card-panel">
+          <h2 class="card-title"><i class="fa-solid fa-map-location-dot text-primary"></i> Google Business Listing Map</h2>
+          <form action="/admin/save-content?tab=site-seo" method="POST">
+            <input type="hidden" name="section" value="google">
+
+            <div class="form-row">
+              <div class="field-group">
+                <label class="field-label" for="maps_embed">Google Maps Embed HTML Iframe Code</label>
+                <textarea id="maps_embed" name="maps_embed" class="field-textarea" required style="min-height: 100px;" placeholder="Paste iframe code here..."></textarea>
+                <p class="field-hint">Copy the maps embed code directly from Google Maps (Share -> Embed a Map -> Copy HTML).</p>
+              </div>
+            </div>
+
+            <div class="form-row" style="margin-top: 1.5rem;">
+              <div class="field-group">
+                <label class="field-label" for="custom_head_tags">Google Verification Meta Tags / Custom Head Code</label>
+                <textarea id="custom_head_tags" name="custom_head_tags" class="field-textarea" style="min-height: 100px;" placeholder="Paste <meta name='google-site-verification'...> or tracking script code here..."></textarea>
+                <p class="field-hint">Paste any custom HTML header code (e.g. Google Search Console verification meta tags, Google Tag Manager scripts, etc.). It will be injected dynamically inside the &lt;head&gt; of all public website pages.</p>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-save">
+              Save Google Settings <i class="fa-solid fa-save"></i>
+            </button>
+          </form>
+        </div>
+
+        <!-- Page SEO Meta Settings -->
+        <div class="card-panel">
+          <h2 class="card-title"><i class="fa-solid fa-magnifying-glass text-primary"></i> Page SEO Meta Tags</h2>
+          <form action="/admin/save-content?tab=site-seo" method="POST">
+            <input type="hidden" name="section" value="seo">
+
+            <div class="form-row">
+              <div class="field-group">
+                <label class="field-label" for="seo_page">Target Page</label>
+                <select id="seo_page" name="page" class="field-select" onchange="loadPageSeoData(this.value)">
+                  <option value="index">Homepage</option>
+                  <option value="products">Products Details</option>
+                  <option value="process">Our Process</option>
+                  <option value="trades">Trades We Serve</option>
+                  <option value="contact">Contact Details</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row form-row-2">
+              <div class="field-group">
+                <label class="field-label" for="seo_title">Page Meta Title</label>
+                <input type="text" id="seo_title" name="title" class="field-input" required>
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="seo_desc">Page Meta Description</label>
+                <textarea id="seo_desc" name="description" class="field-textarea" required></textarea>
+              </div>
+            </div>
+
+            <button type="submit" class="btn-save">
+              Save SEO Settings <i class="fa-solid fa-save"></i>
+            </button>
+          </form>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // Tab Controller
+    function switchTab(tabName) {
+      // Deactivate all
+      document.querySelectorAll('.tab-view').forEach(view => view.classList.remove('active'));
+      document.querySelectorAll('.sidebar-menu li').forEach(item => item.classList.remove('active'));
+
+      // Activate target
+      const targetView = document.getElementById('tab-' + tabName);
+      const targetMenuItem = document.getElementById('menu-' + tabName);
+      
+      if (targetView && targetMenuItem) {
+        targetView.classList.add('active');
+        targetMenuItem.classList.add('active');
+      }
+
+      // Update titles
+      const viewTitle = document.getElementById('view-title');
+      const viewSubtitle = document.getElementById('view-subtitle');
+      
+      if (tabName === 'leads') {
+        viewTitle.innerText = "Leads Management Panel";
+        viewSubtitle.innerText = "Manage client details and project requests captured from the website forms.";
+      } else if (tabName === 'site-text') {
+        viewTitle.innerText = "Site Content Text Editor";
+        viewSubtitle.innerText = "Quickly edit titles and copy details across the website.";
+      } else if (tabName === 'site-images') {
+        viewTitle.innerText = "Image Upload Portal";
+        viewSubtitle.innerText = "Upload new image files to replace mock illustration placeholders.";
+      } else if (tabName === 'site-seo') {
+        viewTitle.innerText = "SEO & Maps Integration Dashboard";
+        viewSubtitle.innerText = "Optimize meta fields for search engines and embed Google maps codes.";
+      }
+    }
+
+    // Populate Leads Table
+    function renderLeadsTable(leads) {
+      const tbody = document.getElementById('leads-body');
+      tbody.innerHTML = '';
+
+      if (!leads || leads.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5">
+              <div class="no-leads">
+                <i class="fa-solid fa-folder-open"></i>
+                <p>No customer lead form entries found yet.</p>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      leads.forEach(lead => {
+        const tr = document.createElement('tr');
+        const formattedDate = new Date(lead.date).toLocaleDateString('en-GB', {
+          day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+        });
+
+        tr.innerHTML = `
+          <td style="font-weight: 600; font-size: 0.85rem; color: var(--color-text-muted);">${formattedDate}</td>
+          <td>
+            <div style="font-weight: 700; font-size: 0.95rem;">${lead.name}</div>
+            <div style="font-size: 0.8rem; color: var(--color-text-muted);"><i class="fa-solid fa-phone"></i> ${lead.phone}</div>
+            <div style="font-size: 0.8rem; color: var(--color-text-muted);"><i class="fa-solid fa-envelope"></i> ${lead.email}</div>
+          </td>
+          <td><span class="badge-trade">${lead.trade}</span></td>
+          <td><div class="lead-message">${lead.message || '<i>No message provided.</i>'}</div></td>
+          <td>
+            <form action="/admin/delete-lead" method="POST" onsubmit="return confirm('Are you sure you want to delete this lead?');">
+              <input type="hidden" name="lead_id" value="${lead.id}">
+              <button type="submit" class="btn-delete-lead" title="Delete Lead">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </form>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Filter Leads Search
+    function filterLeads() {
+      const query = document.getElementById('lead-search').value.toLowerCase();
+      const leads = window.CRM_LEADS || [];
+      const filtered = leads.filter(lead => {
+        return lead.name.toLowerCase().includes(query) ||
+               lead.phone.toLowerCase().includes(query) ||
+               lead.email.toLowerCase().includes(query) ||
+               lead.trade.toLowerCase().includes(query) ||
+               (lead.message && lead.message.toLowerCase().includes(query));
+      });
+      renderLeadsTable(filtered);
+    }
+
+    // Populate Page SEO Form dynamically
+    function loadPageSeoData(page) {
+      const content = window.CRM_CONTENT || {};
+      const seo = content.seo || {};
+      const pageSeo = seo[page] || { title: '', description: '' };
+      
+      document.getElementById('seo_title').value = pageSeo.title || '';
+      document.getElementById('seo_desc').value = pageSeo.description || '';
+    }
+
+    // Initialize Page with Injected Data
+    document.addEventListener('DOMContentLoaded', () => {
+      // Query parameters tracking
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('save') === 'success') {
+        document.getElementById('save-alert').style.display = 'flex';
+        setTimeout(() => {
+          document.getElementById('save-alert').style.opacity = '0';
+          setTimeout(() => document.getElementById('save-alert').style.display = 'none', 500);
+        }, 4000);
+      }
+      
+      const tabParam = params.get('tab');
+      if (tabParam) {
+        switchTab(tabParam);
+      }
+
+      // Populate text edits
+      const content = window.CRM_CONTENT || {};
+      
+      if (content.homepage) {
+        document.getElementById('hero_title').value = content.homepage.hero_title || '';
+        document.getElementById('hero_description').value = content.homepage.hero_description || '';
+        if (content.homepage.hero_graphic) {
+          document.getElementById('preview-hero').style.backgroundImage = `url('/${content.homepage.hero_graphic}')`;
+        }
+      }
+
+      if (content.products) {
+        if (content.products.product1_image) {
+          document.getElementById('preview-prod1').style.backgroundImage = `url('/${content.products.product1_image}')`;
+        }
+        if (content.products.product2_image) {
+          // If external url, style direct
+          const url = content.products.product2_image;
+          document.getElementById('preview-prod2').style.backgroundImage = `url('${url.startsWith('assets') ? '/' + url : url}')`;
+        }
+      }
+
+      if (content.process) {
+        document.getElementById('step1_title').value = content.process.step1_title || '';
+        document.getElementById('step1_desc').value = content.process.step1_desc || '';
+        document.getElementById('step2_title').value = content.process.step2_title || '';
+        document.getElementById('step2_desc').value = content.process.step2_desc || '';
+        document.getElementById('step3_title').value = content.process.step3_title || '';
+        document.getElementById('step3_desc').value = content.process.step3_desc || '';
+      }
+
+      if (content.google) {
+        document.getElementById('maps_embed').value = content.google.maps_embed || '';
+        document.getElementById('custom_head_tags').value = content.google.custom_head_tags || '';
+      }
+
+      // Initialize SEO view
+      loadPageSeoData('index');
+
+      // Populate Leads view
+      renderLeadsTable(window.CRM_LEADS || []);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+{
+  "seo": {
+    "index": {
+      "title": "Website Design & Marketing Systems for Contractors | Boost Built Portsmouth",
+      "description": "Boost Built designs high-converting websites and automated marketing systems for trade and contracting businesses in Portsmouth, Hampshire and across the UK. No BS retainers, just real results."
+    },
+    "products": {
+      "title": "Contractor Marketing Systems & Web Design Products | Boost Built",
+      "description": "Explore our high-converting contractor website designs, automated missed call textback, local SEO packages, and one-click ad campaigns tailored for Portsmouth trade businesses."
+    },
+    "process": {
+      "title": "Our Process | Boost Built",
+      "description": "See how we build, onboard, and launch automated marketing software and custom websites for UK builders, plumbers, and local contractors."
+    },
+    "trades": {
+      "title": "Trades We Serve | Boost Built Portsmouth",
+      "description": "We specialize in custom web designs for plumbers, builders, landscapers, roofers, and other local trade contractors across Hampshire."
+    },
+    "contact": {
+      "title": "Contact Us | Boost Built Portsmouth",
+      "description": "Get in touch with the Boost Built team in Portsmouth. Call, text, WhatsApp, or request a custom proposal online."
+    }
+  },
+  "google": {
+    "maps_embed": "<iframe src=\"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d40292.05609462828!2d-1.121575841459423!3d50.800924408669465!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x48745d1d643876e9%3A0xe0a174c8df6e25d2!2sPortsmouth!5e0!3m2!1sen!2suk!4v1687440000000!5m2!1sen!2suk\" width=\"100%\" height=\"200\" style=\"border:0; border-radius: 4px;\" allowfullscreen=\"\" loading=\"lazy\" referrerpolicy=\"no-referrer-when-downgrade\"></iframe>",
+    "custom_head_tags": ""
+  },
+  "homepage": {
+    "hero_title": "Website Design&nbsp;&<br>Marketing Systems<br>For Contractors",
+    "hero_description": "Cut the bullsh*t, marketing isn't rocket science.<br><br>\nNo agency... (including ours) has the miracle solution to all your problems. We'll give you the tools to win, but you need to commit to using them!",
+    "hero_graphic": "assets/contractor_hero.png"
+  },
+  "products": {
+    "product1_image": "assets/portsmouth_kitchen_preview.png",
+    "product2_image": "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=800&q=80",
+    "product3_image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80",
+    "product4_image": "https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=800&q=80"
+  },
+  "process": {
+    "step1_title": "Consultation Call",
+    "step1_desc": "It's actually a sales call, we just didn't want to scare you.<br><br>\nBut seriously... we'll answer all your questions, show you any features you have questions about, and show you live client results so you can see the systems in action before putting down a single penny.",
+    "step2_title": "Buildout",
+    "step2_desc": "Fill out a basic onboarding form with your business details.<br><br>\nAfter we have the correct information (your logos, trade qualifications, service pricing, and target locations), we'll get straight to work on building your new custom website and configuring your lead automation software.",
+    "step3_title": "Launch",
+    "step3_desc": "We'll walk you through your new website & marketing system, answer any questions you have, and show you how \"everything\" works...<br><br>\nAnd by everything, we're really just talking about pressing two buttons. We set everything up on autopilot so you can focus on pricing bids and laying bricks."
+  }
+}
