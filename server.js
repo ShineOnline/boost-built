@@ -1,4 +1,4 @@
-﻿const express = require('express');
+const express = require('express');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const multer = require('multer');
@@ -18,6 +18,61 @@ const SESSION_SECRET = process.env.SESSION_SECRET || 'boostbuiltsecretkey';
 // Databases (JSON Files)
 const CONTENT_FILE = path.join(__dirname, 'data', 'content.json');
 const LEADS_FILE = path.join(__dirname, 'data', 'leads.json');
+
+const { Pool } = require('pg');
+const DATABASE_URL = process.env.DATABASE_URL;
+let pool = null;
+
+if (DATABASE_URL) {
+  console.log("PostgreSQL database URL detected. Initializing database pool...");
+  pool = new Pool({
+    connectionString: DATABASE_URL,
+    ssl: {
+      rejectUnauthorized: false
+    }
+  });
+  
+  // Initialize Database Tables
+  initDatabase().catch(err => {
+    console.error("Failed to initialize database tables:", err);
+  });
+} else {
+  console.log("No DATABASE_URL environment variable found. Falling back to local JSON database.");
+}
+
+async function initDatabase() {
+  const client = await pool.connect();
+  try {
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS site_metadata (
+        id INT PRIMARY KEY,
+        content JSONB
+      );
+    `);
+    
+    const res = await client.query('SELECT id FROM site_metadata WHERE id = 1');
+    if (res.rows.length === 0) {
+      const initialContent = loadContentFromFile();
+      await client.query('INSERT INTO site_metadata (id, content) VALUES (1, $1)', [initialContent]);
+      console.log("Database initialized with seed content.");
+    }
+    
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS leads (
+        id VARCHAR PRIMARY KEY,
+        date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        name VARCHAR(255),
+        email VARCHAR(255),
+        phone VARCHAR(50),
+        trade VARCHAR(100),
+        message TEXT
+      );
+    `);
+    console.log("Database tables checked and verified.");
+  } finally {
+    client.release();
+  }
+}
 
 // Multer storage configuration for image uploads
 const storage = multer.diskStorage({
@@ -47,27 +102,97 @@ app.use(session({
 // Static files served from /public
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Database Helpers
-function loadContent() {
+// Local file-only fallback database helpers (used as seed or fallback)
+function loadContentFromFile() {
   if (!fs.existsSync(CONTENT_FILE)) {
     return {};
   }
   return JSON.parse(fs.readFileSync(CONTENT_FILE, 'utf8'));
 }
 
-function saveContent(data) {
+// Async Database Helpers
+async function loadContent() {
+  if (pool) {
+    try {
+      const res = await pool.query('SELECT content FROM site_metadata WHERE id = 1');
+      if (res.rows.length > 0) {
+        return res.rows[0].content;
+      }
+    } catch (err) {
+      console.error("Error reading site content from database:", err);
+    }
+  }
+  return loadContentFromFile();
+}
+
+async function saveContent(data) {
+  if (pool) {
+    try {
+      await pool.query('UPDATE site_metadata SET content = $1 WHERE id = 1', [data]);
+      return;
+    } catch (err) {
+      console.error("Error saving site content to database:", err);
+    }
+  }
   fs.writeFileSync(CONTENT_FILE, JSON.stringify(data, null, 2), 'utf8');
 }
 
-function loadLeads() {
+async function loadLeads() {
+  if (pool) {
+    try {
+      const res = await pool.query('SELECT * FROM leads ORDER BY date DESC');
+      return res.rows.map(row => ({
+        id: row.id,
+        date: row.date.toISOString(),
+        name: row.name,
+        email: row.email,
+        phone: row.phone,
+        trade: row.trade,
+        message: row.message
+      }));
+    } catch (err) {
+      console.error("Error loading leads from database:", err);
+    }
+  }
   if (!fs.existsSync(LEADS_FILE)) {
     return [];
   }
   return JSON.parse(fs.readFileSync(LEADS_FILE, 'utf8'));
 }
 
-function saveLeads(leads) {
+async function saveLeads(leads) {
   fs.writeFileSync(LEADS_FILE, JSON.stringify(leads, null, 2), 'utf8');
+}
+
+async function addLead(lead) {
+  if (pool) {
+    try {
+      await pool.query(
+        'INSERT INTO leads (id, date, name, email, phone, trade, message) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+        [lead.id, lead.date, lead.name, lead.email, lead.phone, lead.trade, lead.message]
+      );
+      return;
+    } catch (err) {
+      console.error("Error inserting lead into database:", err);
+    }
+  }
+  const leads = await loadLeads();
+  leads.unshift(lead);
+  saveLeads(leads);
+}
+
+async function removeLead(leadId) {
+  if (pool) {
+    try {
+      await pool.query('DELETE FROM leads WHERE id = $1', [leadId]);
+      return;
+    } catch (err) {
+      console.error("Error deleting lead from database:", err);
+    }
+  }
+  let leads = await loadLeads();
+  leads = leads.filter(lead => lead.id !== leadId);
+  saveLeads(leads);
 }
 
 // Authentication check middleware
@@ -79,14 +204,14 @@ function requireLogin(req, res, next) {
 }
 
 // Helper to render HTML pages dynamically by replacing backend placeholders
-function renderPage(req, res, pageName) {
+async function renderPage(req, res, pageName) {
   const filePath = path.join(__dirname, 'views', `${pageName}.html`);
   if (!fs.existsSync(filePath)) {
     return res.status(404).send('Page not found');
   }
 
   let html = fs.readFileSync(filePath, 'utf8');
-  const db = loadContent();
+  const db = await loadContent();
 
   // Dynamic SEO Injection
   const seoData = db.seo && db.seo[pageName] ? db.seo[pageName] : {};
@@ -186,30 +311,29 @@ function renderPage(req, res, pageName) {
 }
 
 // Front-End Routes
-app.get('/', (req, res) => renderPage(req, res, 'index'));
+app.get('/', async (req, res) => await renderPage(req, res, 'index'));
 app.get('/index.html', (req, res) => res.redirect('/'));
 
-app.get('/products', (req, res) => renderPage(req, res, 'products'));
+app.get('/products', async (req, res) => await renderPage(req, res, 'products'));
 app.get('/products.html', (req, res) => res.redirect('/products'));
 
-app.get('/process', (req, res) => renderPage(req, res, 'process'));
+app.get('/process', async (req, res) => await renderPage(req, res, 'process'));
 app.get('/process.html', (req, res) => res.redirect('/process'));
 
-app.get('/trades', (req, res) => renderPage(req, res, 'trades'));
+app.get('/trades', async (req, res) => await renderPage(req, res, 'trades'));
 app.get('/trades.html', (req, res) => res.redirect('/trades'));
 
-app.get('/contact', (req, res) => renderPage(req, res, 'contact'));
+app.get('/contact', async (req, res) => await renderPage(req, res, 'contact'));
 app.get('/contact.html', (req, res) => res.redirect('/contact'));
 
 // Form Lead Submission Endpoint
-app.post('/api/leads', (req, res) => {
+app.post('/api/leads', async (req, res) => {
   const { name, email, phone, trade, message } = req.body;
 
   if (!name || !email || !phone) {
     return res.status(400).json({ success: false, error: 'Name, Email, and Phone fields are required.' });
   }
 
-  const leads = loadLeads();
   const newLead = {
     id: `lead_${Date.now()}`,
     date: new Date().toISOString(),
@@ -220,8 +344,7 @@ app.post('/api/leads', (req, res) => {
     message: message || ''
   };
 
-  leads.unshift(newLead); // Add to beginning of array
-  saveLeads(leads);
+  await addLead(newLead);
 
   res.json({ success: true, message: 'Lead saved successfully!' });
 });
@@ -258,15 +381,15 @@ app.get('/admin/logout', (req, res) => {
 });
 
 // Admin Dashboard Route
-app.get('/admin', requireLogin, (req, res) => {
+app.get('/admin', requireLogin, async (req, res) => {
   const filePath = path.join(__dirname, 'views', 'dashboard.html');
   if (!fs.existsSync(filePath)) {
     return res.status(404).send('Dashboard template not found');
   }
 
   let html = fs.readFileSync(filePath, 'utf8');
-  const db = loadContent();
-  const leads = loadLeads();
+  const db = await loadContent();
+  const leads = await loadLeads();
 
   // Inject current configuration data into script tag
   const dataScript = `
@@ -281,8 +404,8 @@ app.get('/admin', requireLogin, (req, res) => {
 });
 
 // CRM Edit Settings Endpoints
-app.post('/admin/save-content', requireLogin, (req, res) => {
-  const db = loadContent();
+app.post('/admin/save-content', requireLogin, async (req, res) => {
+  const db = await loadContent();
   const { section, ...fields } = req.body;
 
   if (!section) {
@@ -309,12 +432,12 @@ app.post('/admin/save-content', requireLogin, (req, res) => {
     db[section] = fields;
   }
 
-  saveContent(db);
+  await saveContent(db);
   res.redirect('/admin?save=success&tab=' + (req.query.tab || 'site-text'));
 });
 
 // CRM Image Upload Endpoint
-app.post('/admin/upload-image', requireLogin, upload.single('image_file'), (req, res) => {
+app.post('/admin/upload-image', requireLogin, upload.single('image_file'), async (req, res) => {
   if (!req.file) {
     return res.status(400).send('No file uploaded.');
   }
@@ -325,7 +448,7 @@ app.post('/admin/upload-image', requireLogin, upload.single('image_file'), (req,
   }
 
   const relativePath = `assets/${req.file.filename}`;
-  const db = loadContent();
+  const db = await loadContent();
 
   if (target_field === 'hero_graphic') {
     db.homepage = db.homepage || {};
@@ -335,20 +458,18 @@ app.post('/admin/upload-image', requireLogin, upload.single('image_file'), (req,
     db.products[target_field] = relativePath;
   }
 
-  saveContent(db);
+  await saveContent(db);
   res.redirect('/admin?save=success&tab=site-images');
 });
 
 // CRM Leads Management Endpoint (Delete Lead)
-app.post('/admin/delete-lead', requireLogin, (req, res) => {
+app.post('/admin/delete-lead', requireLogin, async (req, res) => {
   const { lead_id } = req.body;
   if (!lead_id) {
     return res.status(400).send('Lead ID is required.');
   }
 
-  let leads = loadLeads();
-  leads = leads.filter(lead => lead.id !== lead_id);
-  saveLeads(leads);
+  await removeLead(lead_id);
 
   res.redirect('/admin?save=success&tab=leads');
 });
@@ -357,3 +478,4 @@ app.post('/admin/delete-lead', requireLogin, (req, res) => {
 app.listen(PORT, () => {
   console.log(`Boost Built server running on http://localhost:${PORT}`);
 });
+
